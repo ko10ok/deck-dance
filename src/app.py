@@ -31,6 +31,9 @@ class App:
         # Создаём окно с OpenGL контекстом
         self._create_window()
 
+        # Скрываем курсор
+        pygame.mouse.set_visible(False)
+
         # Инициализация подсистем
         self.clock = pygame.time.Clock()
         self.running = True
