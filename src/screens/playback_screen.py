@@ -81,9 +81,9 @@ class PlaybackScreen(BaseScreen):
             self.app.scene_manager.next_scene()
 
         # Создание анимации по клику мыши
-        if input_manager.is_mouse_pressed(1):  # ЛКМ
-            pos = input_manager.get_mouse_pos()
-            self.pending_touches.append(pos)
+        # if input_manager.is_mouse_pressed(1):  # ЛКМ
+        #     pos = input_manager.get_mouse_pos()
+        #     self.pending_touches.append(pos)
 
         # Создание анимации по нажатию A
         if input_manager.is_button_pressed(ControllerButtons.A):
@@ -96,9 +96,8 @@ class PlaybackScreen(BaseScreen):
 
         # Обработка мультитача
         for touch_id, pos in input_manager.get_touch_points().items():
-            # Создаём анимацию только для новых касаний
-            # (здесь упрощённо - при каждом кадре с касанием)
-            pass  # Мультитач обрабатывается через события FINGERDOWN
+            # Создаём анимацию для касаний
+            self.pending_touches.append(pos)
 
     def _create_animation_at(self, pos: Tuple[int, int]):
         """Создание анимации в указанной точке"""
