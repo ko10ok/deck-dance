@@ -1,0 +1,17 @@
+{
+  "name": "Default Scene",
+  "background_color": [0.1, 0.1, 0.15, 1.0],
+  "animation_configs": {
+    "expanding_circle": {
+      "color": [1.0, 1.0, 1.0, 1.0],
+      "duration": 1.0,
+      "max_radius": 150.0,
+      "ring_width": 0.15
+    }
+  },
+  "metadata": {
+    "author": "default",
+    "description": "Дефолтная сцена с белыми расходящимися кругами"
+  }
+}
+
