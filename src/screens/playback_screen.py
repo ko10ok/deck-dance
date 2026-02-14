@@ -25,6 +25,7 @@ class PlaybackScreen(BaseScreen):
         # UI элементы
         self.scene_picker = ScenePicker(app)
         self.show_scene_picker = False
+        self.show_verbose_control_ui = False  # По умолчанию скрыто
 
         # Состояние
         self.pending_touches: List[Tuple[int, int]] = []
@@ -70,6 +71,10 @@ class PlaybackScreen(BaseScreen):
         # Переключение полноэкранного режима
         if input_manager.is_option_pressed():
             self.app.toggle_fullscreen()
+
+        # Переключение отображения подсказок (Y)
+        if input_manager.is_button_pressed(ControllerButtons.Y):
+            self.show_verbose_control_ui = not self.show_verbose_control_ui
 
         # Смена сцен влево/вправо
         if (input_manager.is_dpad_pressed("left") or
@@ -135,6 +140,9 @@ class PlaybackScreen(BaseScreen):
 
     def _render_ui(self, renderer: Renderer):
         """Отрисовка UI элементов"""
+        if not self.show_verbose_control_ui:
+            return
+
         scene = self.app.scene_manager.current_scene
         if not scene:
             return
