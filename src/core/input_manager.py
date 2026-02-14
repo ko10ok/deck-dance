@@ -267,7 +267,7 @@ class InputManager:
 
     def is_mouse_pressed(self, button: int = 1) -> bool:
         """Кнопка мыши только что нажата"""
-        return button in self.state.mouse_just_pressed
+        return self.state.mouse_buttons.get(button, False)
 
     def get_mouse_pos(self) -> Tuple[int, int]:
         """Позиция мыши"""

@@ -86,9 +86,9 @@ class PlaybackScreen(BaseScreen):
             self.app.scene_manager.next_scene()
 
         # Создание анимации по клику мыши
-        # if input_manager.is_mouse_pressed(1):  # ЛКМ
-        #     pos = input_manager.get_mouse_pos()
-        #     self.pending_touches.append(pos)
+        if input_manager.is_mouse_pressed(3):  # ЛКМ
+            pos = input_manager.get_mouse_pos()
+            self.pending_touches.append(pos)
 
         # Создание анимации по нажатию A
         if input_manager.is_button_pressed(ControllerButtons.A):
