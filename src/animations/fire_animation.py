@@ -78,7 +78,7 @@ class FireAnimation(BaseAnimation):
         self.particles: List[FireParticle] = []
 
         # Эмиссия частиц
-        self.emit_interval = 0.02
+        self.emit_interval = 0.005
         self.emit_timer = 0.0
         self.particles_emitted = 0
 

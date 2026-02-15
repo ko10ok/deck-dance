@@ -79,7 +79,7 @@ def register_all_animations():
         {
             "color": (1.0, 0.4, 0.1, 1.0),
             "duration": 0.7,
-            "particle_count": 150,
+            "particle_count": 50,
             "spread": 150.0,
             "initial_speed": 200.0,
             "gravity": (0.0, -400.0)
