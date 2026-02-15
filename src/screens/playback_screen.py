@@ -9,7 +9,7 @@ from src.core.input_manager import InputManager
 from src.core.renderer import Renderer
 from src.config import ControllerButtons
 from src.animations.animation_pool import AnimationPool
-from src.animations.expanding_circle import ExpandingCircleAnimation
+from src.animations.animation_registry import AnimationRegistry
 from src.ui.scene_picker import ScenePicker
 
 
@@ -78,12 +78,23 @@ class PlaybackScreen(BaseScreen):
 
         # Смена сцен влево/вправо
         if (input_manager.is_dpad_pressed("left") or
-            input_manager.is_key_pressed(pygame.K_LEFT)):
+            input_manager.is_key_pressed(pygame.K_a)):
             self.app.scene_manager.prev_scene()
 
         if (input_manager.is_dpad_pressed("right") or
-            input_manager.is_key_pressed(pygame.K_RIGHT)):
+            input_manager.is_key_pressed(pygame.K_d)):
             self.app.scene_manager.next_scene()
+
+        # Смена анимации вверх/вниз (для текущей сцены)
+        scene = self.app.scene_manager.current_scene
+        if scene:
+            if (input_manager.is_dpad_pressed("up") or
+                input_manager.is_key_pressed(pygame.K_w)):
+                scene.prev_animation()
+
+            if (input_manager.is_dpad_pressed("down") or
+                input_manager.is_key_pressed(pygame.K_s)):
+                scene.next_animation()
 
         # Создание анимации по клику мыши
         if input_manager.is_mouse_pressed(3):  # ЛКМ
@@ -110,18 +121,18 @@ class PlaybackScreen(BaseScreen):
         if not scene:
             return
 
+        # Получаем имя текущей выбранной анимации для этой сцены
+        animation_name = scene.current_animation_name
+        if not animation_name:
+            return
+
         # Получаем конфигурацию анимации из сцены
-        config = scene.animation_configs.get("expanding_circle", {})
+        config = scene.get_animation_config(animation_name)
 
-        animation = ExpandingCircleAnimation(
-            center=pos,
-            color=config.get("color", (1.0, 1.0, 1.0, 1.0)),
-            duration=config.get("duration", 1.0),
-            max_radius=config.get("max_radius", 150.0),
-            ring_width=config.get("ring_width", 0.15)
-        )
-
-        self.animation_pool.add(animation)
+        # Создаём анимацию через реестр
+        animation = AnimationRegistry.create(animation_name, center=pos, config=config)
+        if animation:
+            self.animation_pool.add(animation)
 
     def render(self, renderer: Renderer):
         """Отрисовка экрана"""
@@ -157,16 +168,23 @@ class PlaybackScreen(BaseScreen):
         scene_text = font.render(f"Сцена: {scene.name}", True, (255, 255, 255, 180))
         surface.blit(scene_text, (20, 20))
 
+        # Текущий тип анимации
+        anim_name = scene.current_animation_name or "нет"
+        anim_type_text = font.render(f"Анимация: {anim_name}", True, (255, 255, 255, 180))
+        surface.blit(anim_type_text, (20, 50))
+
         # Количество активных анимаций
         anim_count = len(self.animation_pool.animations)
-        count_text = font.render(f"Анимаций: {anim_count}", True, (255, 255, 255, 180))
-        surface.blit(count_text, (20, 50))
+        count_text = font.render(f"Активных: {anim_count}", True, (255, 255, 255, 180))
+        surface.blit(count_text, (20, 80))
 
         # Подсказки
         hints = [
             "←→ Смена сцены",
+            "↑↓ Смена анимации",
             "Зажать X: меню сцен",
             "Клик/A: анимация",
+            "Y: скрыть UI",
             "Select: полный экран",
             "Start: выход"
         ]

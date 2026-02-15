@@ -3,11 +3,11 @@
 """
 
 import os
-import json
-from typing import Dict, List, Optional
+from typing import List, Optional
 from src.config import SCENES_DIR
 from src.scenes.base_scene import Scene
 from src.scenes.scene_loader import SceneLoader
+from src.animations.animation_registry import AnimationRegistry, register_all_animations
 
 
 class SceneManager:
@@ -17,6 +17,12 @@ class SceneManager:
         self.scenes: List[Scene] = []
         self.current_index: int = 0
         self.loader = SceneLoader()
+
+        # Регистрируем все анимации
+        register_all_animations()
+
+        # Получаем список доступных анимаций
+        self.available_animations = AnimationRegistry.get_all_names()
 
         # Загрузка сцен из директории
         self._load_scenes()
@@ -34,23 +40,21 @@ class SceneManager:
         for filename in sorted(os.listdir(SCENES_DIR)):
             if filename.endswith('.json'):
                 filepath = os.path.join(SCENES_DIR, filename)
-                scene = self.loader.load(filepath)
+                scene = self.loader.load(filepath, self.available_animations)
                 if scene:
                     self.scenes.append(scene)
 
     def _create_default_scene(self):
         """Создание дефолтной сцены"""
+        # Получаем дефолтные конфигурации из реестра
+        default_configs = AnimationRegistry.get_all_default_configs()
+
         default_scene = Scene(
             name="Default Scene",
             background_color=(0.1, 0.1, 0.15, 1.0),
-            animation_configs={
-                "expanding_circle": {
-                    "color": (1.0, 1.0, 1.0, 1.0),
-                    "duration": 1.0,
-                    "max_radius": 150.0,
-                    "ring_width": 0.15
-                }
-            }
+            animation_configs=default_configs,
+            available_animations=self.available_animations.copy(),
+            current_animation_index=0
         )
         self.scenes.append(default_scene)
 
