@@ -70,8 +70,8 @@ class AnimationRegistry:
 def register_all_animations():
     """Регистрация всех стандартных анимаций"""
     from src.animations.expanding_circle import ExpandingCircleAnimation
-    from src.animations.fire_animation import FireAnimation
     from src.animations.fire_animation_optimized import FireAnimationOptimized
+    from src.animations.bouncing_line import BouncingLineAnimation
 
     AnimationRegistry.register(
         "expanding_circle",
@@ -124,3 +124,34 @@ def register_all_animations():
             "gravity": (0.0, 0.0)
         }
     )
+
+    # Отскакивающая линия в расширяющемся квадрате
+    AnimationRegistry.register(
+        "bouncing_line",
+        BouncingLineAnimation,
+        {
+            "color": (0.0, 1.0, 1.0, 1.0),
+            "duration": 1.0,
+            "initial_box_size": 100.0,
+            "max_box_size": 1500.0,
+            "speed": 600.0,
+            "expand": True,
+            "line_style": "solid"
+        }
+    )
+
+    # Отскакивающая линия в сужающемся квадрате
+    AnimationRegistry.register(
+        "bouncing_line_shrink",
+        BouncingLineAnimation,
+        {
+            "color": (1.0, 0.5, 0.0, 1.0),
+            "duration": 1.0,
+            "initial_box_size": 100.0,
+            "max_box_size": 1500.0,
+            "speed": 300.0,
+            "expand": False,
+            "line_style": "dotted"
+        }
+    )
+
