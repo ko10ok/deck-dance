@@ -49,7 +49,7 @@ class App:
             "playback": PlaybackScreen(self),
             "editor": EditorScreen(self),
         }
-        self.current_screen = self.screens["main_menu"]
+        self.current_screen = self.screens["playback"]
 
     def _create_window(self):
         """Создание окна с OpenGL контекстом"""

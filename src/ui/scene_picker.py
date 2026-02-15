@@ -36,9 +36,9 @@ class ScenePicker:
             self.selected_index = (self.selected_index + 1) % scene_count
 
         # Навигация клавиатурой
-        if input_manager.is_key_pressed(pygame.K_UP):
+        if input_manager.is_key_pressed(pygame.K_w):
             self.selected_index = (self.selected_index - 1) % scene_count
-        if input_manager.is_key_pressed(pygame.K_DOWN):
+        if input_manager.is_key_pressed(pygame.K_s):
             self.selected_index = (self.selected_index + 1) % scene_count
 
         # Выбор сцены при отпускании X или нажатии A

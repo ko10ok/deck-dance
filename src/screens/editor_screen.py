@@ -45,11 +45,11 @@ class EditorScreen(BaseScreen):
 
         # Навигация
         if (input_manager.is_dpad_pressed("up") or
-            input_manager.is_key_pressed(pygame.K_UP)):
+            input_manager.is_key_pressed(pygame.K_w)):
             self.selected_index = (self.selected_index - 1) % len(self.menu_items)
 
         if (input_manager.is_dpad_pressed("down") or
-            input_manager.is_key_pressed(pygame.K_DOWN)):
+            input_manager.is_key_pressed(pygame.K_s)):
             self.selected_index = (self.selected_index + 1) % len(self.menu_items)
 
         # Выбор

@@ -56,11 +56,11 @@ class MainMenuScreen(BaseScreen):
         """Обработка ввода в меню"""
         # Навигация вверх/вниз
         if (input_manager.is_dpad_pressed("up") or
-            input_manager.is_key_pressed(pygame.K_UP)):
+            input_manager.is_key_pressed(pygame.K_w)):
             self.selected_index = (self.selected_index - 1) % len(self.menu_items)
 
         if (input_manager.is_dpad_pressed("down") or
-            input_manager.is_key_pressed(pygame.K_DOWN)):
+            input_manager.is_key_pressed(pygame.K_s)):
             self.selected_index = (self.selected_index + 1) % len(self.menu_items)
 
         # Выбор пункта
@@ -69,9 +69,9 @@ class MainMenuScreen(BaseScreen):
             input_manager.is_key_pressed(pygame.K_SPACE)):
             self._select_current_item()
 
-        # Выход
+        # Выход (возврат в режим воспроизведения)
         if input_manager.is_escape_pressed():
-            self.app.quit()
+            self.app.switch_screen("playback")
 
     def _select_current_item(self):
         """Обработка выбора текущего пункта меню"""
@@ -113,7 +113,7 @@ class MainMenuScreen(BaseScreen):
             surface.blit(surf, rect)
 
         # Подсказки управления
-        hint_text = "↑↓ Выбор  |  A/Enter Подтвердить  |  ESC Выход"
+        hint_text = "↑↓ Выбор  |  A/Enter Подтвердить  |  ESC Назад"
         hint_surface = pygame.font.Font(None, 28).render(hint_text, True, (128, 128, 128))
         hint_rect = hint_surface.get_rect(center=(width // 2, height - 50))
         surface.blit(hint_surface, hint_rect)
