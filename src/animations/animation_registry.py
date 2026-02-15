@@ -61,6 +61,7 @@ def register_all_animations():
     """Регистрация всех стандартных анимаций"""
     from src.animations.expanding_circle import ExpandingCircleAnimation
     from src.animations.fire_animation import FireAnimation
+    from src.animations.fire_animation_optimized import FireAnimationOptimized
 
     AnimationRegistry.register(
         "expanding_circle",
@@ -78,6 +79,20 @@ def register_all_animations():
         FireAnimation,
         {
             "color": (1.0, 0.4, 0.1, 1.0),
+            "duration": 0.7,
+            "particle_count": 50,
+            "spread": 150.0,
+            "initial_speed": 200.0,
+            "gravity": (0.0, -400.0)
+        }
+    )
+
+    # Оптимизированная версия огня (для большого количества частиц)
+    AnimationRegistry.register(
+        "fire_optimized",
+        FireAnimationOptimized,
+        {
+            "color": (0.3, 1.0, 0.4, 1.0),
             "duration": 0.7,
             "particle_count": 50,
             "spread": 150.0,

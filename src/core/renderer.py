@@ -20,10 +20,12 @@ class Renderer:
         # Загрузка шейдеров
         self.plane_program = self._load_shader("plane")
         self.circle_program = self._load_shader("circle")
+        self.circle_instanced_program = self._create_instanced_circle_shader()
 
         # Создание геометрии
         self._create_plane()
         self._create_circle_quad()
+        self._create_instanced_circle_buffers()
 
         # Матрицы камеры
         self._update_matrices()
@@ -108,6 +110,54 @@ class Renderer:
             )
         return ("", "")
 
+    def _create_instanced_circle_shader(self) -> moderngl.Program:
+        """Создание шейдера для instanced рендеринга кругов"""
+        vert_src = """
+        #version 330 core
+        
+        // Вершинные атрибуты (для квада)
+        in vec2 in_position;
+        in vec2 in_texcoord;
+        
+        // Instance атрибуты (для каждой частицы)
+        in vec2 inst_center;
+        in float inst_radius;
+        in vec4 inst_color;
+        
+        out vec2 v_texcoord;
+        out vec4 v_color;
+        
+        uniform vec2 screen_size;
+        
+        void main() {
+            vec2 pos = inst_center + in_position * inst_radius;
+            vec2 ndc = (pos / screen_size) * 2.0 - 1.0;
+            ndc.y = -ndc.y;
+            gl_Position = vec4(ndc, 0.0, 1.0);
+            v_texcoord = in_texcoord;
+            v_color = inst_color;
+        }
+        """
+
+        frag_src = """
+        #version 330 core
+        
+        in vec2 v_texcoord;
+        in vec4 v_color;
+        out vec4 fragColor;
+        
+        uniform float ring_width;
+        
+        void main() {
+            float dist = length(v_texcoord - vec2(0.5));
+            float ring = smoothstep(0.5, 0.5 - ring_width, dist) - 
+                         smoothstep(0.5 - ring_width, 0.5 - ring_width * 2.0, dist);
+            fragColor = vec4(v_color.rgb, ring * v_color.a);
+        }
+        """
+
+        return self.ctx.program(vertex_shader=vert_src, fragment_shader=frag_src)
+
     def _create_plane(self):
         """Создание 3D плоскости"""
         size = PLANE_SIZE
@@ -149,6 +199,36 @@ class Renderer:
             self.circle_program,
             [(self.circle_vbo, '2f 2f', 'in_position', 'in_texcoord')],
             self.circle_ibo
+        )
+
+    def _create_instanced_circle_buffers(self, max_instances: int = 1000):
+        """Создание буферов для instanced рендеринга кругов"""
+        self.max_circle_instances = max_instances
+
+        # Квад для instanced рендеринга (такой же как обычный)
+        vertices = np.array([
+            -1.0, -1.0,  0.0, 0.0,
+             1.0, -1.0,  1.0, 0.0,
+             1.0,  1.0,  1.0, 1.0,
+            -1.0,  1.0,  0.0, 1.0,
+        ], dtype='f4')
+
+        indices = np.array([0, 1, 2, 0, 2, 3], dtype='i4')
+
+        self.circle_inst_vbo = self.ctx.buffer(vertices.tobytes())
+        self.circle_inst_ibo = self.ctx.buffer(indices.tobytes())
+
+        # Буфер для instance данных: center(2f) + radius(1f) + color(4f) = 7 floats per instance
+        # Создаём буфер максимального размера, будем обновлять только нужную часть
+        self.circle_inst_data_vbo = self.ctx.buffer(reserve=max_instances * 7 * 4)  # 4 bytes per float
+
+        self.circle_inst_vao = self.ctx.vertex_array(
+            self.circle_instanced_program,
+            [
+                (self.circle_inst_vbo, '2f 2f', 'in_position', 'in_texcoord'),
+                (self.circle_inst_data_vbo, '2f 1f 4f /i', 'inst_center', 'inst_radius', 'inst_color'),
+            ],
+            self.circle_inst_ibo
         )
 
     def _update_matrices(self):
@@ -200,6 +280,45 @@ class Renderer:
 
         self.circle_vao.render(moderngl.TRIANGLES)
 
+    def render_circles_instanced(
+        self,
+        centers: np.ndarray,
+        radii: np.ndarray,
+        colors: np.ndarray,
+        ring_width: float = 0.1
+    ):
+        """
+        Отрисовка множества кругов за один draw call (instanced rendering).
+
+        Args:
+            centers: np.ndarray shape (N, 2) - позиции центров
+            radii: np.ndarray shape (N,) - радиусы
+            colors: np.ndarray shape (N, 4) - цвета RGBA
+            ring_width: толщина кольца
+        """
+        count = len(centers)
+        if count == 0:
+            return
+
+        # Ограничиваем количество instances
+        count = min(count, self.max_circle_instances)
+
+        # Собираем данные для GPU: center(2) + radius(1) + color(4) = 7 floats per instance
+        instance_data = np.zeros((count, 7), dtype=np.float32)
+        instance_data[:, 0:2] = centers[:count]
+        instance_data[:, 2] = radii[:count]
+        instance_data[:, 3:7] = colors[:count]
+
+        # Обновляем буфер (только нужную часть)
+        self.circle_inst_data_vbo.write(instance_data.tobytes())
+
+        # Устанавливаем uniforms
+        self.circle_instanced_program['screen_size'].value = self.window_size
+        self.circle_instanced_program['ring_width'].value = ring_width
+
+        # Один draw call для всех частиц!
+        self.circle_inst_vao.render(moderngl.TRIANGLES, instances=count)
+
     def cleanup(self):
         """Очистка ресурсов"""
         self.plane_vao.release()
@@ -208,5 +327,9 @@ class Renderer:
         self.circle_vao.release()
         self.circle_vbo.release()
         self.circle_ibo.release()
+        self.circle_inst_vao.release()
+        self.circle_inst_vbo.release()
+        self.circle_inst_ibo.release()
+        self.circle_inst_data_vbo.release()
 
 
