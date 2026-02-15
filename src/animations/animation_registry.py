@@ -74,30 +74,44 @@ def register_all_animations():
         }
     )
 
+    # AnimationRegistry.register(
+    #     "fire",
+    #     FireAnimation,
+    #     {
+    #         "color": (1.0, 0.4, 0.1, 1.0),
+    #         "duration": 0.7,
+    #         "particle_count": 50,
+    #         "spread": 150.0,
+    #         "initial_speed": 200.0,
+    #         "gravity": (0.0, -400.0)
+    #     }
+    # )
+
+    # Версия огня (для большого количества частиц)
     AnimationRegistry.register(
         "fire",
-        FireAnimation,
+        FireAnimationOptimized,
         {
             "color": (1.0, 0.4, 0.1, 1.0),
             "duration": 0.7,
             "particle_count": 50,
             "spread": 150.0,
-            "initial_speed": 200.0,
+            "initial_speed": 250.0,
             "gravity": (0.0, -400.0)
         }
     )
 
     # Оптимизированная версия огня (для большого количества частиц)
     AnimationRegistry.register(
-        "fire_optimized",
+        "spark",
         FireAnimationOptimized,
         {
-            "color": (0.3, 1.0, 0.4, 1.0),
+            "color": (0.3, 0.5, 1.0, 1.0),
             "duration": 0.7,
-            "particle_count": 50,
-            "spread": 150.0,
-            "initial_speed": 200.0,
-            "gravity": (0.0, -400.0)
+            "particle_count": 10,
+            "spread": 300.0,
+            "initial_speed": 500.0,
+            "gravity": (0.0, 0.0)
         }
     )
 
