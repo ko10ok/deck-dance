@@ -133,7 +133,7 @@ def register_all_animations():
             "color": (0.0, 1.0, 1.0, 1.0),
             "duration": 1.0,
             "initial_box_size": 100.0,
-            "max_box_size": 1500.0,
+            "max_box_size": 1200.0,
             "speed": 600.0,
             "expand": True,
             "line_style": "solid"
@@ -146,10 +146,10 @@ def register_all_animations():
         BouncingLineAnimation,
         {
             "color": (1.0, 0.5, 0.0, 1.0),
-            "duration": 1.0,
+            "duration": 1,
             "initial_box_size": 100.0,
-            "max_box_size": 1500.0,
-            "speed": 300.0,
+            "max_box_size": 1200.0,
+            "speed": 800.0,
             "expand": False,
             "line_style": "dotted"
         }

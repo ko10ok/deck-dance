@@ -146,7 +146,7 @@ class BouncingLineAnimation(BaseAnimation):
             self.finished = True
 
     def render(self, renderer: Renderer):
-        """Отрисовка цельной линии между двумя точками"""
+        """Отрисовка цельной линии между двумя точками с использованием instanced rendering"""
         if self.finished:
             return
 
@@ -155,47 +155,41 @@ class BouncingLineAnimation(BaseAnimation):
 
         # Прозрачность уменьшается к концу
         alpha = (1.0 - self.progress * 0.5) * float(self.color[3])
-        color_tuple = (float(self.color[0]), float(self.color[1]), float(self.color[2]), 1.0)
 
         # Вычисляем длину линии и количество сегментов
         line_length = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
         if self.line_style == "solid":
-            # Сплошная линия - больше точек, плотнее расположены
-            num_segments = max(10, int(line_length / 3))
-            for i in range(num_segments):
-                t = i / (num_segments - 1) if num_segments > 1 else 0.5
-                px = x1 + (x2 - x1) * t
-                py = y1 + (y2 - y1) * t
-
-                # Одинаковый размер для сплошной линии
-                size = 3.0
-
-                renderer.render_circle(
-                    center=(px, py),
-                    radius=size,
-                    alpha=alpha,
-                    color=color_tuple,
-                    ring_width=0.5
-                )
+            # Сплошная линия - меньше сегментов для оптимизации
+            num_segments = max(8, int(line_length / 5))
+            size = 3.0
         else:
             # Точечная линия - меньше точек, разреженные
             num_segments = max(5, int(line_length / 15))
-            for i in range(num_segments):
-                t = i / (num_segments - 1) if num_segments > 1 else 0.5
-                px = x1 + (x2 - x1) * t
-                py = y1 + (y2 - y1) * t
+            size = 4.0  # базовый размер
 
-                # Размер точки больше на концах
-                size = 4.0 + 1.5 * (1.0 - abs(t - 0.5) * 2)
+        # Предвычисляем все позиции и параметры за раз
+        t_values = np.linspace(0, 1, num_segments, dtype=np.float32)
 
-                renderer.render_circle(
-                    center=(px, py),
-                    radius=size,
-                    alpha=alpha,
-                    color=color_tuple,
-                    ring_width=0.5
-                )
+        centers = np.zeros((num_segments, 2), dtype=np.float32)
+        centers[:, 0] = x1 + (x2 - x1) * t_values
+        centers[:, 1] = y1 + (y2 - y1) * t_values
+
+        if self.line_style == "solid":
+            radii = np.full(num_segments, size, dtype=np.float32)
+        else:
+            # Размер точки больше на концах
+            radii = (4.0 + 1.5 * (1.0 - np.abs(t_values - 0.5) * 2)).astype(np.float32)
+
+        # Цвета с альфой
+        colors = np.zeros((num_segments, 4), dtype=np.float32)
+        colors[:, 0] = self.color[0]
+        colors[:, 1] = self.color[1]
+        colors[:, 2] = self.color[2]
+        colors[:, 3] = alpha
+
+        # Один draw call для всех сегментов линии!
+        renderer.render_circles_instanced(centers, radii, colors, ring_width=0.5)
 
     @classmethod
     def get_config_schema(cls) -> Dict[str, Any]:
