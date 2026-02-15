@@ -34,7 +34,7 @@ class MainMenuScreen(BaseScreen):
         """Создание поверхностей с текстом"""
         # Заголовок
         self.title_surface = self.font_large.render(
-            "Steam Deck Multimedia", True, (255, 255, 255)
+            "Toc Vi Paint", True, (255, 255, 255)
         )
 
         # Пункты меню
