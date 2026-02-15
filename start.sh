@@ -1,5 +1,7 @@
 #!/bin/bash
 
+git pull
+
 # Steam Deck Multimedia Application Launcher
 # Автоматическая установка venv и запуск приложения
 
