@@ -11,6 +11,7 @@ from src.config import ControllerButtons
 from src.animations.animation_pool import AnimationPool
 from src.animations.animation_registry import AnimationRegistry
 from src.ui.scene_picker import ScenePicker
+from src.utils.color_picker import ColorPicker
 
 
 class PlaybackScreen(BaseScreen):
@@ -29,6 +30,10 @@ class PlaybackScreen(BaseScreen):
 
         # Состояние
         self.pending_touches: List[Tuple[int, int]] = []
+
+        # Выбор цвета через левый джойстик
+        self.current_hue = 0.0  # Оттенок 0-360
+        self.current_color = (1.0, 0.0, 0.0, 1.0)  # RGBA
 
     def on_enter(self):
         """Инициализация при входе на экран"""
@@ -75,6 +80,14 @@ class PlaybackScreen(BaseScreen):
         # Переключение отображения подсказок (Y)
         if input_manager.is_button_pressed(ControllerButtons.Y):
             self.show_verbose_control_ui = not self.show_verbose_control_ui
+
+        # === Выбор цвета через ColorPicker ===
+        color_result = ColorPicker.get_color(
+            pressed_keys=list(input_manager.state.keys_just_pressed),
+            stick=input_manager.state.left_stick
+        )
+        if color_result:
+            self.current_hue, self.current_color = color_result
 
         # Смена сцен влево/вправо
         if (input_manager.is_dpad_pressed("left") or
@@ -129,8 +142,13 @@ class PlaybackScreen(BaseScreen):
         # Получаем конфигурацию анимации из сцены
         config = scene.get_animation_config(animation_name)
 
-        # Создаём анимацию через реестр
-        animation = AnimationRegistry.create(animation_name, center=pos, config=config)
+        # Создаём анимацию через реестр с переопределением цвета через kwargs
+        animation = AnimationRegistry.create(
+            animation_name,
+            center=pos,
+            config=config,
+            color=self.current_color
+        )
         if animation:
             self.animation_pool.add(animation)
 
@@ -189,9 +207,29 @@ class PlaybackScreen(BaseScreen):
             "Start: выход"
         ]
         hint_font = pygame.font.Font(None, 24)
-        for i, hint in enumerate(hints):
+        hints_x = width - 200
+        y_offset = 20
+
+        for hint in hints:
             hint_surf = hint_font.render(hint, True, (150, 150, 150))
-            surface.blit(hint_surf, (width - 200, 20 + i * 25))
+            surface.blit(hint_surf, (hints_x, y_offset))
+            y_offset += 25
+
+        # Отображение текущего цвета (текст + квадратик)
+        y_offset += 10  # Небольшой отступ
+        color_text = hint_font.render(f"Цвет: {int(self.current_hue)}°", True, (150, 150, 150))
+        surface.blit(color_text, (hints_x, y_offset))
+
+        # Квадратик с цветом рядом с текстом
+        color_rect_x = hints_x + color_text.get_width() + 10
+        color_rect_size = 18
+        color_rgb = (
+            int(self.current_color[0] * 255),
+            int(self.current_color[1] * 255),
+            int(self.current_color[2] * 255)
+        )
+        pygame.draw.rect(surface, color_rgb, (color_rect_x, y_offset, color_rect_size, color_rect_size))
+        pygame.draw.rect(surface, (100, 100, 100), (color_rect_x, y_offset, color_rect_size, color_rect_size), 1)
 
         # Рендеринг surface
         self._render_pygame_surface(surface, renderer)

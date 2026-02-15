@@ -2,6 +2,7 @@
 Менеджер ввода - обработка контроллера и клавиатуры
 с поддержкой модификаторов (зажатых кнопок)
 """
+from math import trunc
 
 import pygame
 from typing import Dict, Set, Tuple, Optional

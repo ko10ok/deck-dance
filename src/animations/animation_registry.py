@@ -43,16 +43,26 @@ class AnimationRegistry:
 
     @classmethod
     def create(cls, name: str, center: Tuple[float, float],
-               config: Dict[str, Any] = None) -> Optional['BaseAnimation']:
-        """Создание экземпляра анимации по имени с конфигурацией"""
+               config: Dict[str, Any] = None, **kwargs) -> Optional['BaseAnimation']:
+        """
+        Создание экземпляра анимации по имени с конфигурацией.
+
+        Args:
+            name: Имя зарегистрированной анимации
+            center: Центр анимации (x, y)
+            config: Базовая конфигурация (из сцены)
+            **kwargs: Дополнительные параметры для переопределения конфига
+        """
         animation_class = cls.get(name)
         if not animation_class:
             return None
 
-        # Объединяем дефолтную конфигурацию с переданной
+        # Объединяем: default -> config -> kwargs (kwargs имеет наивысший приоритет)
         final_config = cls.get_default_config(name)
         if config:
             final_config.update(config)
+        if kwargs:
+            final_config.update(kwargs)
 
         return animation_class(center=center, **final_config)
 
@@ -114,6 +124,3 @@ def register_all_animations():
             "gravity": (0.0, 0.0)
         }
     )
-
-
-
