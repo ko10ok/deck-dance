@@ -1,0 +1,17 @@
+{
+  "name": "Blue Waves",
+  "background_color": [0.05, 0.08, 0.15, 1.0],
+  "animation_configs": {
+    "expanding_circle": {
+      "color": [0.3, 0.6, 1.0, 1.0],
+      "duration": 1.5,
+      "max_radius": 200.0,
+      "ring_width": 0.12
+    }
+  },
+  "metadata": {
+    "author": "default",
+    "description": "Синие волны на тёмном фоне"
+  }
+}
+
